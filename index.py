@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from flask import Flask, jsonify, request, render_template, redirect, flash
+from flask import Flask, jsonify, request, render_template, redirect, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -16,14 +16,17 @@ class Users(db.Model):
     id: int
     nombre: str
     apellido: str
+    username: str
     correo: str
     password: str
-
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(60), nullable=False)
     apellido = db.Column(db.String(60), nullable=False)
+    username = db.Column(db.String(60), nullable=False,unique=True)
     correo = db.Column(db.String(60), nullable=False)
     password = db.Column(db.String(20), nullable=False)
+    
+
     
     def __repr__(self):
         return f'<User {self.id}>'
@@ -90,6 +93,10 @@ def login_js():
 @app.route('/login_menu')
 def login_menu():
     return render_template('login.html')
+@app.route('/images/page.avif')
+def images():
+    path = 'page.avif'
+    return send_from_directory('/images',path)
 
 @app.route('/users', methods=['GET', 'POST'])
 def route_colors():
@@ -99,7 +106,7 @@ def route_colors():
     
     elif request.method == 'POST':
         color_data = request.get_json()
-        color = Users(nombre=color_data['nombre'], apellido=color_data['apellido'], correo=color_data['correo'], password = color_data['password'])
+        color = Users(nombre=color_data['nombre'], apellido=color_data['apellido'],username=color_data['username'], correo=color_data['correo'], password = color_data['password'])
         db.session.add(color)
         db.session.commit()
         return "SUCCESS"
@@ -113,6 +120,7 @@ def route_users_id(users_id):
                 'id': color.id,
                 'nombre': color.nombre,
                 'apellido': color.apellido,
+                'username':color.username,
                 'correo': color.correo,
                 'password':color.password
             }
@@ -135,6 +143,7 @@ def route_users_id(users_id):
         if color:
             color.nombre = data['nombre']
             color.apellido = data['apellido']
+            color.username = data['username']
             color.correo = data['correo']
             color.password = data['password']
             db.session.commit()
@@ -150,7 +159,9 @@ def route_books():
     elif request.method == 'POST':
         book_data = request.get_json()
         user = Users.query.get(book_data['id_usuario'])
+        
         autor = f"{user.nombre} {user.apellido}"
+
         book = Libros(
             id_usuario=book_data['id_usuario'],
             id_categoria=book_data['id_categoria'],
@@ -163,16 +174,19 @@ def route_books():
         db.session.add(book)
         db.session.commit()
         return "SUCCESS"
+    
 @app.route('/books/<books_id>', methods=['GET','PUT','DELETE'])
 def route_books_id(books_id):
     if request.method == 'GET':
-        book = Libros.query.get(books_id)
+        book = Libros.query.get(books_id)   
         return jsonify(book)
+    
     elif request.method == 'DELETE':
         book = Libros.query.filter_by(id=books_id).first()
         db.session.delete(book)
         db.session.commit()
         return "SUCCESS"
+    
     elif request.method == 'PUT':
         data = request.get_json()
         book = Libros.query.filter_by(id=books_id).first()
@@ -195,18 +209,34 @@ def route_books_id(books_id):
         else:
             return "ERROR"
 
+@app.route('/categorias', methods=['GET','POST'])
+def rout_categorias():
+    if request.method == 'GET':
+        categoria = Categorias.query.all()
+        return jsonify(categoria)
+    elif request.method == 'POST':
+        data = request.get_json()
+        categoria = Categorias(nombre=data['nombre'])
+        db.session.add(categoria)
+        db.session.commit()
+        return "SUCCESS"
 
-
-@app.route('/pagina')
-def pagina():
-    return render_template('pagina.html')
 
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    player = Users.query.filter_by(correo=data["correo"]).first()
-    if player and player.check_password(data["password"]):
+    user = Users.query.filter_by(correo=data['correo']).first()
+    if user and user.check_password(data['password']):
+        session['user_id'] = user.id
         return redirect('/pagina')
     else:
         flash('Invalid email or password', 'error')
         return render_template('login.html')
+    
+@app.route('/pagina')
+def pagina():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user = Users.query.get(user_id)
+        return render_template('pagina.html',user=user)
+    
