@@ -240,3 +240,5 @@ def pagina():
         user = Users.query.get(user_id)
         return render_template('pagina.html',user=user)
     
+
+#puto el que lo lea
