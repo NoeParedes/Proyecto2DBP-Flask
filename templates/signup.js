@@ -1,10 +1,11 @@
 function signup() {
     var nombre = document.getElementById("nombre").value;
     var apellido = document.getElementById("apellido").value;
+    var username = document.getElementById("username").value;
     var correo = document.getElementById("correo").value;
     var password = document.getElementById("password").value;
 
-    if (nombre === '' || password === '' || apellido === '' || correo === '') {
+    if (nombre === '' || password === '' || apellido === '' || correo === '' ||username=='') {
         alert("Por favor rellene todos los campos.");
         return;
     }
@@ -20,7 +21,7 @@ function signup() {
      //   return;
    // }
 
-    var data = { "nombre": nombre, "apellido": apellido ,"correo":correo, "password":password };
+    var data = { "nombre": nombre, "apellido": apellido,"username":username ,"correo":correo, "password":password };
 
     fetch('/users', {
         method: 'POST',
