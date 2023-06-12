@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from flask import Flask, jsonify, request, render_template, redirect, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS #pip install -U flask-cors
 
 app = Flask(__name__)
+CORS(app, origins='http://localhost:3000')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -72,31 +74,6 @@ with app.app_context():
     db.create_all()
 
 
-@app.route('/')
-def menu():
-    return render_template('signup.html')
-
-@app.route('/menu.js')
-def menu_js():
-    return render_template('menu.js')
-
-@app.route('/signup_menu')
-def signup_menu():
-    return render_template('signup.html')
-@app.route('/signup.js')
-def signup_js():
-    return render_template('signup.js')
-
-@app.route('/login.js')
-def login_js():
-    return render_template('login.js')
-@app.route('/login_menu')
-def login_menu():
-    return render_template('login.html')
-@app.route('/images/page.avif')
-def images():
-    path = 'page.avif'
-    return send_from_directory('/images',path)
 
 @app.route('/users', methods=['GET', 'POST'])
 def route_colors():
@@ -228,17 +205,13 @@ def login():
     user = Users.query.filter_by(correo=data['correo']).first()
     if user and user.check_password(data['password']):
         session['user_id'] = user.id
-        return redirect('/pagina')
+        return "SUCCESS"
     else:
         flash('Invalid email or password', 'error')
-        return render_template('login.html')
+        return "ERROR"
+
     
-@app.route('/pagina')
-def pagina():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        user = Users.query.get(user_id)
-        return render_template('pagina.html',user=user)
+
     
 
 #puto el que lo lea
