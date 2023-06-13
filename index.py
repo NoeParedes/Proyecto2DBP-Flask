@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from flask import Flask, jsonify, request, render_template, redirect, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS #pip install -U flask-cors
+from correo import enviar_correo
+
 
 app = Flask(__name__)
 CORS(app, origins='http://localhost:3000')
@@ -210,8 +212,57 @@ def login():
         flash('Invalid email or password', 'error')
         return "ERROR"
 
+
+@app.route('/password/<password_correo>', methods=['GET'])
+def password(password_correo):
+    data = Users.query.filter_by(correo=password_correo).first()
+    if data:
+        # Crea el contenido del correo con la contraseña y el nombre de usuario
+        contenido = f"Contraseña: {data.password}\nNombre de usuario: {data.username}"
+
+        # Llama a la función enviar_correo con los datos correspondientes
+        enviar_correo(password_correo, "Recuperación de cuenta", contenido)
+
+        return jsonify(data.password)
+    else:
+        return "Correo no encontrado"
+
+
+
+@app.route('/enviar_correo', methods=['POST'])
+def enviar_correo_handler():
+    data = request.get_json()
+    print(data)
     
+    correo = data.get('correo')
+    password = data.get('password')
+    username = data.get('username')
+
+    # Crea el contenido del correo con la contraseña y el nombre de usuario
+    contenido = f"Contraseña: {password}\nNombre de usuario: {username}"
+
+    # Llama a la función enviar_correo con los datos correspondientes
+    enviar_correo(correo, "Recuperacion de cueta", contenido)
+
+    response = {
+        'mensaje': 'Correo enviado correctamente',
+        'correo': correo,
+        'password': password,
+        'username': username
+    }
+
+    return jsonify(response)
+
+
+
 
     
+#import http.client
+#name = http.client.HTTPConnection("127.0.0.1", 5000)
 
-#puto el que lo lea
+#name.request("GET","/players")
+#response = name.getresponse()
+
+#print("Response",response.read().decode())
+
+#name.close()
