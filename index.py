@@ -206,8 +206,8 @@ def login():
     data = request.get_json()
     user = Users.query.filter_by(correo=data['correo']).first()
     if user and user.check_password(data['password']):
-        session['user_id'] = user.id
-        return "SUCCESS"
+        session['id_usuario'] = user.id
+        return jsonify({'id_usuario': user.id})
     else:
         flash('Invalid email or password', 'error')
         return "ERROR"
