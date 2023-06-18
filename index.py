@@ -157,8 +157,16 @@ def route_books():
 @app.route('/books/<books_id>', methods=['GET','PUT','DELETE'])
 def route_books_id(books_id):
     if request.method == 'GET':
-        book = Libros.query.get(books_id)   
-        return jsonify(book)
+        book = Libros.query.filter_by(id_categoria=books_id).all()   
+        data = []
+        for book in book:
+            book_data = {
+                "titulo": book.titulo,
+                "descripcion": book.descripcion,
+                "autor": book.autor,
+                "precio": book.precio            }
+            data.append(book_data)
+        return jsonify(data)
     
     elif request.method == 'DELETE':
         book = Libros.query.filter_by(id=books_id).first()
