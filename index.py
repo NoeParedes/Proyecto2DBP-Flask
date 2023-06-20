@@ -134,7 +134,15 @@ def route_users_id(users_id):
 def route_books():
     if request.method == 'GET':
         book = Libros.query.all()
-        return jsonify(book)
+        data = []
+        for book in book:
+            book_data = {
+                "titulo": book.titulo,
+                "descripcion": book.descripcion,
+                "autor": book.autor,
+                "precio": book.precio            }
+            data.append(book_data)
+        return jsonify(data)
     elif request.method == 'POST':
         book_data = request.get_json()
         user = Users.query.get(book_data['id_usuario'])
@@ -154,7 +162,7 @@ def route_books():
         db.session.commit()
         return "SUCCESS"
     
-@app.route('/books/<books_id>', methods=['GET','PUT','DELETE'])
+@app.route('/books/categorias/<books_id>', methods=['GET','PUT','DELETE'])
 def route_books_id(books_id):
     if request.method == 'GET':
         book = Libros.query.filter_by(id_categoria=books_id).all()   
@@ -207,6 +215,25 @@ def rout_categorias():
         db.session.add(categoria)
         db.session.commit()
         return "SUCCESS"
+@app.route('/categorias/<id_categoria>', methods=['GET','DELETE','PUT'])
+def route_categorias_id(id_categoria):
+    if request.method == 'GET':
+        book = Libros.query.filter_by(id=id_categoria).all()   
+        data = []
+        for book in book:
+            book_data = {
+                "titulo": book.titulo,
+                "descripcion": book.descripcion,
+                "autor": book.autor,
+                "precio": book.precio            }
+            data.append(book_data)
+        return jsonify(data)
+    elif request.method == 'DELETE':
+        book = Libros.query.filter_by(id=id_categoria).first()
+        db.session.delete(book)
+        db.session.commit()
+        return "SUCCESS"
+
 
 
 @app.route('/login', methods=['POST'])
