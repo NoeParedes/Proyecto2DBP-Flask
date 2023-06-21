@@ -140,7 +140,8 @@ def route_books():
                 "titulo": book.titulo,
                 "descripcion": book.descripcion,
                 "autor": book.autor,
-                "precio": book.precio            }
+                "precio": book.precio,
+                "id"      : book.id }
             data.append(book_data)
         return jsonify(data)
     elif request.method == 'POST':
@@ -172,7 +173,8 @@ def route_books_id(books_id):
                 "titulo": book.titulo,
                 "descripcion": book.descripcion,
                 "autor": book.autor,
-                "precio": book.precio            }
+                "precio": book.precio,
+                "id"      : book.id  }
             data.append(book_data)
         return jsonify(data)
     
@@ -222,10 +224,11 @@ def route_categorias_id(id_categoria):
         data = []
         for book in book:
             book_data = {
-                "titulo": book.titulo,
-                "descripcion": book.descripcion,
-                "autor": book.autor,
-                "precio": book.precio            }
+                "id"          : book.id,
+                "titulo"      : book.titulo,
+                "descripcion" : book.descripcion,
+                "autor"       : book.autor,
+                "precio"      : book.precio}
             data.append(book_data)
         return jsonify(data)
     elif request.method == 'DELETE':
