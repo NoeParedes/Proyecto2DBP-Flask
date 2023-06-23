@@ -141,7 +141,8 @@ def route_books():
                 "descripcion": book.descripcion,
                 "autor": book.autor,
                 "precio": book.precio,
-                "id"      : book.id }
+                "id"      : book.id,
+                "id_category" : book.id_categoria }
             data.append(book_data)
         return jsonify(data)
     elif request.method == 'POST':
@@ -151,20 +152,34 @@ def route_books():
         autor = f"{user.nombre} {user.apellido}"
 
         book = Libros(
-            id_usuario=book_data['id_usuario'],
-            id_categoria=book_data['id_categoria'],
-            titulo=book_data['titulo'],
-            autor=autor,
-            descripcion=book_data['descripcion'],
-            precio=book_data['precio'],
-            archivo_pdf=book_data['archivo_pdf']
+            id_usuario     = book_data['id_usuario'],
+            id_categoria   = book_data['id_categoria'],
+            titulo         = book_data['titulo'],
+            autor          = autor,
+            descripcion    = book_data['descripcion'],
+            precio         = book_data['precio'],
+            archivo_pdf    = book_data['archivo_pdf']
         )
         db.session.add(book)
         db.session.commit()
         return "SUCCESS"
     
-@app.route('/books/categorias/<books_id>', methods=['GET','PUT','DELETE'])
+@app.route('/books/<books_id>', methods=['GET'])
 def route_books_id(books_id):
+    if request.method == 'GET':
+        book = Libros.query.filter_by(id=books_id).first()
+        if book:
+            result = {
+                "titulo": book.titulo,
+                "descripcion": book.descripcion,
+                "autor": book.autor,
+                "precio": book.precio,
+                "id"      : book.id  }
+            return jsonify(result)
+    return "ERROR"
+
+@app.route('/books/categorias/<books_id>', methods=['GET','PUT','DELETE'])
+def route_books_category_id(books_id):
     if request.method == 'GET':
         book = Libros.query.filter_by(id_categoria=books_id).all()   
         data = []
@@ -217,6 +232,7 @@ def rout_categorias():
         db.session.add(categoria)
         db.session.commit()
         return "SUCCESS"
+
 @app.route('/categorias/<id_categoria>', methods=['GET','DELETE','PUT'])
 def route_categorias_id(id_categoria):
     if request.method == 'GET':
