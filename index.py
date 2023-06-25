@@ -142,7 +142,8 @@ def route_books():
                 "autor": book.autor,
                 "precio": book.precio,
                 "id"      : book.id,
-                "id_category" : book.id_categoria }
+                "id_category" : book.id_categoria,
+                "id_usuario" : book.id_usuario }
             data.append(book_data)
         return jsonify(data)
     elif request.method == 'POST':
@@ -170,12 +171,29 @@ def route_books_id(books_id):
         book = Libros.query.filter_by(id=books_id).first()
         if book:
             result = {
+                "titulo"      : book.titulo,
+                "descripcion" : book.descripcion,
+                "autor"       : book.autor,
+                "precio"      : book.precio,
+                "id"          : book.id,
+                "archivo_pdf" : book.archivo_pdf}
+            return jsonify(result)
+    return "ERROR"
+
+@app.route('/books/usuario/<id>', methods=['GET'])
+def route_books_user_id(id):
+    if request.method == 'GET':
+        book = Libros.query.filter_by(id_usuario=id).all()   
+        data = []
+        for book in book:
+            book_data = {
                 "titulo": book.titulo,
                 "descripcion": book.descripcion,
                 "autor": book.autor,
                 "precio": book.precio,
-                "id"      : book.id  }
-            return jsonify(result)
+                "id"      : book.id }
+            data.append(book_data)
+        return jsonify(data)
     return "ERROR"
 
 @app.route('/books/categorias/<books_id>', methods=['GET','PUT','DELETE'])
