@@ -137,21 +137,21 @@ def route_books():
         data = []
         for book in book:
             book_data = {
-                "titulo": book.titulo,
-                "descripcion": book.descripcion,
-                "autor": book.autor,
-                "precio": book.precio,
-                "id"      : book.id,
+                "titulo"      : book.titulo,
+                "descripcion" : book.descripcion,
+                "autor"       : book.autor,
+                "precio"      : book.precio,
+                "id"          : book.id,
                 "id_category" : book.id_categoria,
-                "id_usuario" : book.id_usuario }
+                "id_usuario"  : book.id_usuario,
+                "archivo_pdf" : book.archivo_pdf }
             data.append(book_data)
         return jsonify(data)
+    
     elif request.method == 'POST':
         book_data = request.get_json()
-        user = Users.query.get(book_data['id_usuario'])
-        
+        user = Users.query.get(book_data['id_usuario'])    
         autor = f"{user.nombre} {user.apellido}"
-
         book = Libros(
             id_usuario     = book_data['id_usuario'],
             id_categoria   = book_data['id_categoria'],
@@ -165,20 +165,34 @@ def route_books():
         db.session.commit()
         return "SUCCESS"
     
-@app.route('/books/<books_id>', methods=['GET'])
+@app.route('/books/<books_id>', methods=['GET','PUT'])
 def route_books_id(books_id):
     if request.method == 'GET':
         book = Libros.query.filter_by(id=books_id).first()
+        book_data = {
+            "titulo"      : book.titulo,
+            "descripcion" : book.descripcion,
+            "autor"       : book.autor,
+            "precio"      : book.precio,
+            "id"          : book.id,
+            "id_category" : book.id_categoria,
+            "id_usuario"  : book.id_usuario,
+            "archivo_pdf" : book.archivo_pdf }
+        return jsonify(book_data)
+    elif request.method == 'PUT':
+        data = request.get_json()
+        book = Libros.query.get_or_404(books_id)
         if book:
-            result = {
-                "titulo"      : book.titulo,
-                "descripcion" : book.descripcion,
-                "autor"       : book.autor,
-                "precio"      : book.precio,
-                "id"          : book.id,
-                "archivo_pdf" : book.archivo_pdf}
-            return jsonify(result)
-    return "ERROR"
+            book.id_usuario   = data['id_usuario']
+            book.id_categoria = data['id_category']
+            book.titulo       = data['titulo']
+            book.descripcion  = data['descripcion']
+            book.precio       = data['precio']
+            book.archivo_pdf  = data['archivo_pdf']
+            book.autor        = data['autor']
+            db.session.commit()
+            return "SUCCESS"
+        return "SUCCESS"
 
 @app.route('/books/usuario/<id>', methods=['GET'])
 def route_books_user_id(id):
@@ -187,11 +201,12 @@ def route_books_user_id(id):
         data = []
         for book in book:
             book_data = {
-                "titulo": book.titulo,
-                "descripcion": book.descripcion,
-                "autor": book.autor,
-                "precio": book.precio,
-                "id"      : book.id }
+                "titulo"      : book.titulo,
+                "descripcion" : book.descripcion,
+                "autor"       : book.autor,
+                "precio"      : book.precio,
+                "id"          : book.id,
+                "archivo_pdf" : book.archivo_pdf}
             data.append(book_data)
         return jsonify(data)
     return "ERROR"
@@ -222,7 +237,7 @@ def route_books_category_id(books_id):
         book = Libros.query.filter_by(id=books_id).first()
         
         if book:
-            book.id_usuario = data.get('id_usuario')
+            book['id_usuario'] = data.get('id_usuario')
             book.id_categoria = data.get('id_categoria')
             book.titulo = data.get('titulo')
             book.descripcion = data.get('descripcion')
