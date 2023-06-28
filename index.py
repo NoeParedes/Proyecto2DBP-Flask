@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, render_template, redirect, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS #pip install -U flask-cors
 from correo import enviar_correo
-
+from date import today_date
 
 app = Flask(__name__)
 CORS(app, origins='http://localhost:3000')
@@ -29,8 +29,6 @@ class Users(db.Model):
     username = db.Column(db.String(60), nullable=False,unique=True)
     correo = db.Column(db.String(60), nullable=False)
     password = db.Column(db.String(20), nullable=False)
-    
-
     
     def __repr__(self):
         return f'<User {self.id}>'
@@ -72,20 +70,43 @@ class Libros(db.Model):
     def __repr__(self):
         return f'<Libro {self.id}>'
 
+@dataclass
+class Compras(db.Model):
+    id      : int
+    user_id : int
+    autor   : str
+    title   : str
+    price   : float
+    day     : str
+    hour    : str
+
+    id      = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    autor   = db.Column(db.String(100), nullable=False)
+    title   = db.Column(db.String(100), nullable=False)
+    price   = db.Column(db.Float, nullable=False)
+    day     = db.Column(db.String(20), nullable=False)
+    hour    = db.Column(db.String(20), nullable=False)
+
+    def __repr__(self):
+        return f'<Compras {self.id}>'
+
 with app.app_context():
     db.create_all()
 
 
-
 @app.route('/users', methods=['GET', 'POST'])
-def route_colors():
+def route_users():
     if request.method == 'GET':
-        color = Users.query.all()
-        return jsonify(color)
-    
+        users = Users.query.all()
+        return jsonify(users)
     elif request.method == 'POST':
         color_data = request.get_json()
-        color = Users(nombre=color_data['nombre'], apellido=color_data['apellido'],username=color_data['username'], correo=color_data['correo'], password = color_data['password'])
+        color = Users(nombre=color_data['nombre'],
+                      apellido=color_data['apellido'],
+                      username=color_data['username'],
+                      correo=color_data['correo'],
+                      password = color_data['password'])
         db.session.add(color)
         db.session.commit()
         return "SUCCESS"
@@ -106,7 +127,6 @@ def route_users_id(users_id):
             return jsonify(result)
         else:
             return "ERROR"
-    
     elif request.method == 'DELETE':
         color = Users.query.filter_by(id=users_id).first()
         if color:
@@ -115,7 +135,6 @@ def route_users_id(users_id):
             return "SUCCESS"
         else:
             return "ERROR"
-    
     elif request.method == 'PUT':
         data = request.get_json()
         color = Users.query.filter_by(id=users_id).first()
@@ -146,8 +165,7 @@ def route_books():
                 "id_usuario"  : book.id_usuario,
                 "archivo_pdf" : book.archivo_pdf }
             data.append(book_data)
-        return jsonify(data)
-    
+        return jsonify(data)  
     elif request.method == 'POST':
         book_data = request.get_json()
         user = Users.query.get(book_data['id_usuario'])    
@@ -286,7 +304,56 @@ def route_categorias_id(id_categoria):
         db.session.commit()
         return "SUCCESS"
 
+@app.route('/compras', methods=['GET','POST','DELETE'])
+def route_compra():
+    if request.method == 'GET':
+        compras = Compras.query.all()
+        response = []
+        for compra in compras:
+            data = {
+                'id'     : compra.id,
+                'user_id': compra.user_id,
+                'autor'  : compra.autor,
+                'title'  : compra.title,
+                'price'  : compra.price,
+                'day'    : compra.day,
+                'hour'   : compra.hour}
+            response.append(data)
+        return jsonify(response)
+    elif request.method == 'POST':
+        data = request.get_json()
+        now  = today_date()
+        compra = Compras(
+            user_id = data['user_id'],
+            autor   = data['autor'],
+            title   = data['title'],
+            price   = data['price'],
+            day     = now['day'],
+            hour    = now['hour'])
+        db.session.add(compra)
+        db.session.commit()
+        return "SUCCESS"
+    elif request.method == 'DELETE':
+        db.session.query(Compras).delete()
+        db.session.commit()
+        return "SUCCESS"
 
+@app.route('/compras/usuario/<id>', methods=['GET'])
+def route_compra_by_user(id):
+    if request.method == 'GET':
+        compras = Compras.query.filter_by(user_id=id).all()   
+        result = []
+        for compra in compras:
+            data = {
+                "id"      : compra.id,
+                "user_id" : compra.user_id,
+                "autor"   : compra.autor,
+                "title"   : compra.title,
+                "price"   : compra.price,
+                "day"     : compra.day,
+                "hour"    : compra.hour }
+            result.append(data)
+        return jsonify(result)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -298,7 +365,6 @@ def login():
     else:
         flash('Invalid email or password', 'error')
         return "ERROR"
-
 
 @app.route('/password/<password_correo>', methods=['GET'])
 def password(password_correo):
@@ -313,8 +379,6 @@ def password(password_correo):
         return jsonify(data.password)
     else:
         return "Correo no encontrado"
-
-
 
 @app.route('/enviar_correo', methods=['POST'])
 def enviar_correo_handler():
@@ -340,16 +404,5 @@ def enviar_correo_handler():
 
     return jsonify(response)
 
-
-
-
-    
-#import http.client
-#name = http.client.HTTPConnection("127.0.0.1", 5000)
-
-#name.request("GET","/players")
-#response = name.getresponse()
-
-#print("Response",response.read().decode())
-
-#name.close()
+if __name__ == '__main__':
+    app.run()
