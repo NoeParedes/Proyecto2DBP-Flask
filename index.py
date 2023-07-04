@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS #pip install -U flask-cors
 from correo import enviar_correo
 from date import today_date
+from sqlalchemy import or_
 
 app = Flask(__name__)
 CORS(app, origins='http://localhost:3000')
@@ -368,6 +369,17 @@ def login():
     else:
         flash('Invalid email or password', 'error')
         return "ERROR"
+
+
+@app.route('/users/login', methods=['POST'])
+def check_valid_user():
+    data = request.get_json()
+    user = Users.query.filter(or_(Users.correo==data['correo'], Users.username==data['correo'])).first()
+    if user:
+        if user.check_password(data['password']):
+            return jsonify(user)
+        return jsonify({'ERROR': "Incorrect password"})
+    return jsonify({'ERROR': "Unregistered user"})
 
 @app.route('/password/<password_correo>', methods=['GET'])
 def password(password_correo):
