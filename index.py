@@ -236,11 +236,14 @@ def route_books_category_id(books_id):
         data = []
         for book in book:
             book_data = {
-                "titulo": book.titulo,
-                "descripcion": book.descripcion,
-                "autor": book.autor,
-                "precio": book.precio,
-                "id"      : book.id  }
+                "titulo"      : book.titulo,
+                "descripcion" : book.descripcion,
+                "autor"       : book.autor,
+                "precio"      : book.precio,
+                "id"          : book.id,
+                "id_category" : book.id_categoria,
+                "id_usuario"  : book.id_usuario,
+                "archivo_pdf" : book.archivo_pdf }
             data.append(book_data)
         return jsonify(data)
     
