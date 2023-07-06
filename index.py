@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from dataclasses import dataclass
 from flask import Flask, jsonify, request, render_template, redirect, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
@@ -422,5 +419,5 @@ def enviar_correo_handler():
 
     return jsonify(response)
 
-#if __name__ == '__main__':
-#    app.run()
+if __name__ == '__main__':
+    app.run()
