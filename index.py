@@ -184,7 +184,7 @@ def route_books():
         db.session.commit()
         return "SUCCESS"
     
-@app.route('/books/<books_id>', methods=['GET','PUT'])
+@app.route('/books/<books_id>', methods=['GET','PUT','DELETE'])
 def route_books_id(books_id):
     if request.method == 'GET':
         book = Libros.query.filter_by(id=books_id).first()
@@ -212,6 +212,14 @@ def route_books_id(books_id):
             db.session.commit()
             return "SUCCESS"
         return "SUCCESS"
+    elif request.method == 'DELETE':
+        color = Libros.query.filter_by(id=books_id).first()
+        if color:
+            db.session.delete(color)
+            db.session.commit()
+            return "SUCCESS"
+        else:
+            return "ERROR"
 
 @app.route('/books/usuario/<id>', methods=['GET'])
 def route_books_user_id(id):
