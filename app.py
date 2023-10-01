@@ -411,7 +411,7 @@ def enviar_correo_handler():
     contenido = f"Contraseña: {password}\nNombre de usuario: {username}"
 
     # Llama a la función enviar_correo con los datos correspondientes
-    enviar_correo(correo, "Recuperacion de cueta", contenido)
+    enviar_correo(correo, "Recuperacion de cueta", contenido, "\n", "\nLa información contenida en este e-mail y sus anexos es confidencial, privilegiada y está dirigida exclusivamente a su destinatario, en consecuencia, solo puede ser utilizada por aquel. Si usted no es el destinatario original, no deberá examinar, usar, copiar o distribuir este mensaje o la información que contiene. Si lo recibe por error, por favor reenvíelo a la persona que se lo envió y elimínelo. Cualquier retención o uso total o parcial no autorizada de este mensaje está estrictamente prohibida y sancionada por ley.")
 
     response = {
         'mensaje': 'Correo enviado correctamente',

@@ -9,7 +9,7 @@ def enviar_correo(destinatario,asunto,mensaje):
     email["Subject"] = asunto
     email.set_content(mensaje)
     smtp = smtplib.SMTP_SSL("smtp.gmail.com")
-    smtp.login(remitente, "ojcvemntgfquahkd")#contraseña generada por Gmail para la cuenta creada
+    smtp.login(remitente, "ehddkkecntagjicz")#contraseña generada por Gmail para la cuenta creada
     
     smtp.sendmail(remitente, destinatario, email.as_string())
     smtp.quit()
